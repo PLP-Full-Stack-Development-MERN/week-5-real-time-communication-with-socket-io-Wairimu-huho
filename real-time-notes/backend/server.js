@@ -23,11 +23,16 @@ const io = new Server(server, {
 app.set('io', io);
 
 //middleware
-app.use(cors());
+app.use(cors({
+  origin: ['http://localhost:5173', 'http://localhost:3000'], 
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  credentials: true
+}));
+
 app.use(express.json());
 
 //mounting the routes
-app.use('api/notes', notesRoutes);
+app.use('/api/notes', notesRoutes);
 
 //testing route
 app.get('/', (req, res) => {

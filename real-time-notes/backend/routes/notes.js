@@ -1,12 +1,12 @@
 const express = require('express');
 const router = express.Router();
-const Note = require('../models/Notes');
+const Note = require('../models/Note');
 const Joi = require('joi');
 
 //validation
 const noteSchema = Joi.object({
     title: Joi.string().required().min(3).max(100),
-    content: Joi.string().required(),
+    content: Joi.string().allow(''), 
     roomId: Joi.string().required(),
     createdBy: Joi.string().required()
 });
@@ -39,8 +39,7 @@ router.post('/', async (req, res) => {
       const newNote = await note.save();
       res.status(201).json(newNote);
       
-      // Emit socket event for real-time update
-      req.app.get('io').to(req.body.roomId).emit('new_note', newNote);
+    
     } catch (err) {
       res.status(400).json({ message: err.message });
     }
@@ -66,6 +65,21 @@ router.post('/', async (req, res) => {
     } catch (err) {
       res.status(400).json({ message: err.message });
     }
+});
+
+//delete note
+router.delete('/:id', async (req, res) => {
+  try {
+    const note = await Note.findById(req.params.id);
+    if (!note) {
+      return res.status(404).json({ message: 'Note not found' });
+    }
+    
+    await note.deleteOne();
+    res.json({ message: 'Note deleted successfully' });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 });
   
 module.exports = router;
